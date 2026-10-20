@@ -1,0 +1,114 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+model Professional {
+  id                String             @id @default(uuid()) @db.Uuid
+  name              String             @db.VarChar(120)
+  businessName      String?            @db.VarChar(120)
+  email             String             @unique @db.VarChar(254)
+  passwordHash      String             @db.VarChar(255)
+  phone             String             @db.VarChar(15)
+  slug              String             @unique @db.VarChar(80)
+  bio               String?            @db.Text
+  timezone          String             @default("America/Manaus") @db.VarChar(64)
+  createdAt         DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime           @updatedAt @db.Timestamptz(3)
+  services          Service[]
+  clients           Client[]
+  availabilityRules AvailabilityRule[]
+  timeOffs          TimeOff[]
+  appointments      Appointment[]
+}
+
+model Service {
+  id              String        @id @default(uuid()) @db.Uuid
+  professionalId  String        @db.Uuid
+  name            String        @db.VarChar(120)
+  description     String?       @db.Text
+  durationMinutes Int
+  priceCents      Int?
+  active          Boolean       @default(true)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(3)
+  professional    Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  appointments    Appointment[]
+
+  @@unique([professionalId, id], map: "Service_professionalId_id_key")
+  @@index([professionalId, active], map: "Service_professionalId_active_idx")
+}
+
+model Client {
+  id             String        @id @default(uuid()) @db.Uuid
+  professionalId String        @db.Uuid
+  name           String        @db.VarChar(120)
+  phone          String        @db.VarChar(15)
+  email          String?       @db.VarChar(254)
+  notes          String?       @db.Text
+  archivedAt     DateTime?     @db.Timestamptz(3)
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime      @updatedAt @db.Timestamptz(3)
+  professional   Professional  @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  appointments   Appointment[]
+
+  @@unique([professionalId, id], map: "Client_professionalId_id_key")
+  @@index([professionalId, archivedAt, name], map: "Client_professionalId_archivedAt_name_idx")
+}
+
+model AvailabilityRule {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @db.Uuid
+  weekday        Int
+  startTime      DateTime     @db.Time(0)
+  endTime        DateTime     @db.Time(0)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, weekday], map: "AvailabilityRule_professionalId_weekday_idx")
+}
+
+model TimeOff {
+  id             String       @id @default(uuid()) @db.Uuid
+  professionalId String       @db.Uuid
+  startsAt       DateTime     @db.Timestamptz(3)
+  endsAt         DateTime     @db.Timestamptz(3)
+  reason         String?      @db.VarChar(255)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime     @updatedAt @db.Timestamptz(3)
+  professional   Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@index([professionalId, startsAt, endsAt], map: "TimeOff_professionalId_startsAt_endsAt_idx")
+}
+
+model Appointment {
+  id             String            @id @default(uuid()) @db.Uuid
+  professionalId String            @db.Uuid
+  clientId       String            @db.Uuid
+  serviceId      String            @db.Uuid
+  startsAt       DateTime          @db.Timestamptz(3)
+  endsAt         DateTime          @db.Timestamptz(3)
+  status         AppointmentStatus @default(SCHEDULED)
+  cancelledAt    DateTime?         @db.Timestamptz(3)
+  cancelReason   String?           @db.VarChar(255)
+  createdAt      DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime          @updatedAt @db.Timestamptz(3)
+  professional   Professional      @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  client         Client            @relation(fields: [professionalId, clientId], references: [professionalId, id], onDelete: Restrict)
+  service        Service           @relation(fields: [professionalId, serviceId], references: [professionalId, id], onDelete: Restrict)
+
+  @@index([professionalId, status, startsAt], map: "Appointment_professionalId_status_startsAt_idx")
+  @@index([clientId], map: "Appointment_clientId_idx")
+  @@index([serviceId], map: "Appointment_serviceId_idx")
+}

@@ -1,0 +1,26 @@
+{
+  "name": "bookly",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agenda simples para profissionais autônomos",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "scripts": {
+    "build": "corepack pnpm --recursive --if-present build",
+    "check": "corepack pnpm --recursive --if-present check",
+    "dev": "corepack pnpm --parallel --filter './apps/*' dev",
+    "dev:api": "corepack pnpm --filter @bookly/api dev",
+    "dev:web": "corepack pnpm --filter @bookly/web dev",
+    "test": "corepack pnpm --recursive --if-present test",
+    "test:integration": "corepack pnpm --filter @bookly/api test:integration",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:migrate": "corepack pnpm --filter @bookly/api prisma:migrate",
+    "db:seed": "corepack pnpm --filter @bookly/api prisma:seed",
+    "db:status": "corepack pnpm --filter @bookly/api prisma:status",
+    "prisma:generate": "corepack pnpm --filter @bookly/api prisma:generate"
+  }
+}

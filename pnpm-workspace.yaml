@@ -1,0 +1,25 @@
+packages:
+  - "apps/*"
+minimumReleaseAgeExclude:
+  - "js-yaml@5.4.1"
+overrides:
+  js-yaml: "5.4.1"
+permissions:
+  "@parcel/watcher":
+    build: true
+  "@prisma/engines":
+    build: true
+  "@scarf/scarf":
+    build: false
+  "@swc/core":
+    build: true
+  argon2:
+    build: true
+  esbuild:
+    build: true
+  dotenv:
+    skills: false
+  prisma:
+    build: true
+  unrs-resolver:
+    build: true
