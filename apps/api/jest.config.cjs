@@ -9,6 +9,7 @@ module.exports = {
   },
   rootDir: '.',
   testEnvironment: 'node',
+  testPathIgnorePatterns: ['/test/'],
   testRegex: '.*\\.spec\\.ts$',
   transform: {
     '^.+\\.ts$': [
